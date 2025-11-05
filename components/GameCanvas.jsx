@@ -12,20 +12,20 @@ const PLAYER_WIDTH = 44;
 const PLAYER_HEIGHT = 44;
 const PLAYER_DUCK_HEIGHT = 26;
 
-// Physics constants
-const GRAVITY = 0.6;
+// Physics constants - ADJUSTED FOR BETTER PLAYABILITY
+const GRAVITY = 0.3;
 const JUMP_VELOCITY = -12;
-const MAX_FALL_SPEED = 10;
+const MAX_FALL_SPEED = 6;
 
-// Game speed constants - SLOWER INITIAL SPEED
+// Game speed constants - MUCH SLOWER FOR BETTER GAMEPLAY
 const INITIAL_SPEED = 2;
-const SPEED_INCREMENT = 0.2;
-const SPEED_INCREASE_INTERVAL = 500; // Increase speed every 500 points
-const MAX_SPEED = 12;
+const SPEED_INCREMENT = 0.15;
+const SPEED_INCREASE_INTERVAL = 400; // Increase speed every 400 points
+const MAX_SPEED = 5;
 
-// Obstacle constants
-const MIN_OBSTACLE_SPACING = 350;
-const MAX_OBSTACLE_SPACING = 700;
+// Obstacle constants - INCREASED SPACING FOR EASIER GAMEPLAY
+const MIN_OBSTACLE_SPACING = 400;
+const MAX_OBSTACLE_SPACING = 800;
 const CACTUS_MIN_WIDTH = 20;
 const CACTUS_MAX_WIDTH = 48;
 const CACTUS_MIN_HEIGHT = 40;
@@ -361,7 +361,7 @@ function checkCollision(rect1, rect2) {
     rect1.x < rect2.x + rect2.width &&
     rect1.x + rect1.width > rect2.x &&
     rect1.y < rect2.y + rect2.height &&
-    rect1.y + rect1.height > rect2.y
+    rect1.y + rect2.height > rect2.y
   );
 }
 
