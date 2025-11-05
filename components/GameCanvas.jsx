@@ -14,7 +14,7 @@ const PLAYER_DUCK_HEIGHT = 26;
 
 // Physics constants - ADJUSTED FOR BETTER PLAYABILITY
 const GRAVITY = 0.3;
-const JUMP_VELOCITY = -12;
+const JUMP_VELOCITY = -10; 
 const MAX_FALL_SPEED = 6;
 
 // Game speed constants - MUCH SLOWER FOR BETTER GAMEPLAY
@@ -24,12 +24,12 @@ const SPEED_INCREASE_INTERVAL = 400; // Increase speed every 400 points
 const MAX_SPEED = 5;
 
 // Obstacle constants - INCREASED SPACING FOR EASIER GAMEPLAY
-const MIN_OBSTACLE_SPACING = 400;
-const MAX_OBSTACLE_SPACING = 800;
-const CACTUS_MIN_WIDTH = 20;
-const CACTUS_MAX_WIDTH = 48;
-const CACTUS_MIN_HEIGHT = 40;
-const CACTUS_MAX_HEIGHT = 60;
+const MIN_OBSTACLE_SPACING = 250;
+const MAX_OBSTACLE_SPACING = 600;
+const CACTUS_MIN_WIDTH = 15;
+const CACTUS_MAX_WIDTH = 30;
+const CACTUS_MIN_HEIGHT = 35;
+const CACTUS_MAX_HEIGHT = 45;
 
 // Pterodactyl constants
 const PTERODACTYL_WIDTH = 46;
@@ -244,6 +244,11 @@ class Pterodactyl {
     this.type = 'pterodactyl';
     this.wingFrame = 0;
     this.lastFrameTime = 0;
+    this.image = null;
+  }
+
+  setImage(img) {
+    this.image = img;
   }
 
   update(speed, deltaTime) {
@@ -258,20 +263,28 @@ class Pterodactyl {
   }
 
   draw(ctx, color) {
-    ctx.fillStyle = color;
-    // Body
-    ctx.fillRect(this.x + 10, this.y + 10, 26, 16);
-    // Head
-    ctx.fillRect(this.x + 28, this.y + 6, 16, 12);
-    // Beak
-    ctx.fillRect(this.x + 44, this.y + 10, 6, 6);
-    // Wings (animated)
-    if (this.wingFrame === 0) {
-      ctx.fillRect(this.x, this.y, 20, 8);
-      ctx.fillRect(this.x, this.y + 28, 20, 8);
+    // Draw bird image if loaded, otherwise fallback to shapes
+    if (this.image && this.image.complete) {
+      ctx.save();
+      ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+      ctx.restore();
     } else {
-      ctx.fillRect(this.x + 5, this.y + 2, 15, 8);
-      ctx.fillRect(this.x + 5, this.y + 26, 15, 8);
+      // Fallback to original drawing code
+      ctx.fillStyle = color;
+      // Body
+      ctx.fillRect(this.x + 10, this.y + 10, 26, 16);
+      // Head
+      ctx.fillRect(this.x + 28, this.y + 6, 16, 12);
+      // Beak
+      ctx.fillRect(this.x + 44, this.y + 10, 6, 6);
+      // Wings (animated)
+      if (this.wingFrame === 0) {
+        ctx.fillRect(this.x, this.y, 20, 8);
+        ctx.fillRect(this.x, this.y + 28, 20, 8);
+      } else {
+        ctx.fillRect(this.x + 5, this.y + 2, 15, 8);
+        ctx.fillRect(this.x + 5, this.y + 26, 15, 8);
+      }
     }
   }
 
@@ -296,6 +309,11 @@ class ObstacleManager {
     this.obstacles = [];
     this.nextSpawnDistance = MIN_OBSTACLE_SPACING;
     this.distanceTraveled = 0;
+    this.birdImage = null;
+  }
+
+  setBirdImage(img) {
+    this.birdImage = img;
   }
 
   update(speed, deltaTime, score) {
@@ -335,7 +353,12 @@ class ObstacleManager {
 
     if (spawnPterodactyl) {
       const yPosition = PTERODACTYL_Y_POSITIONS[Math.floor(Math.random() * PTERODACTYL_Y_POSITIONS.length)];
-      this.obstacles.push(new Pterodactyl(spawnX, yPosition));
+      const pterodactyl = new Pterodactyl(spawnX, yPosition);
+      // Set bird image if available
+      if (this.birdImage) {
+        pterodactyl.setImage(this.birdImage);
+      }
+      this.obstacles.push(pterodactyl);
     } else {
       // Spawn cactus with random dimensions
       const width = CACTUS_MIN_WIDTH + Math.random() * (CACTUS_MAX_WIDTH - CACTUS_MIN_WIDTH);
@@ -370,6 +393,7 @@ const GameCanvas = ({ onScoreChange, onHighScoreChange, onGameStateChange, onThe
   const canvasRef = useRef(null);
   const backgroundImageRef = useRef(null);
   const trexImageRef = useRef(null);
+  const birdImageRef = useRef(null);
   
   const gameStateRef = useRef({
     player: new Player(),
@@ -399,6 +423,13 @@ const GameCanvas = ({ onScoreChange, onHighScoreChange, onGameStateChange, onThe
       gameStateRef.current.player.setImage(trexImg);
     };
     trexImageRef.current = trexImg;
+
+    const birdImg = new Image();
+    birdImg.src = '/bird.png';
+    birdImg.onload = () => {
+      gameStateRef.current.obstacleManager.setBirdImage(birdImg);
+    };
+    birdImageRef.current = birdImg;
 
     // Load high score from localStorage
     if (typeof window !== 'undefined') {
